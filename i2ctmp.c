@@ -50,6 +50,7 @@
  *  ======== EEPROM Registers ========
  */
 #define EEPROM_ADDR       (0x57)      // 24C32
+#define RTC_ADDR          (0x68)      // DS3231
 
 static Display_Handle display;
 
@@ -98,7 +99,7 @@ void *mainThread(void *arg0)
         Display_printf(display, 0, 0, "I2C Initialized!\n");
     }
 
-    /* Common I2C transaction setup */
+    /* Common I2C EEPROM transaction setup */
     address = 0;
     txBuffer[0] = (int)(address >> 8);   // MSB;
     txBuffer[1] = (int)(address & 0xFF); // LSB
@@ -113,6 +114,20 @@ void *mainThread(void *arg0)
 
         Display_printf(display, 0, 0, "Error. No EEPROM found!");
     }else Display_printf(display, 0, 0, "EEPROM found!");
+
+    /* Common I2C RTC transaction setup */
+    txBuffer[0] = 0;
+
+    i2cTransaction.slaveAddress = RTC_ADDR;
+    i2cTransaction.writeBuf   = txBuffer;
+    i2cTransaction.writeCount = 1;
+    i2cTransaction.readBuf    = rxBuffer;
+    i2cTransaction.readCount  = 1;
+
+    if (!I2C_transfer(i2c, &i2cTransaction)) {
+
+        Display_printf(display, 0, 0, "Error. No RTC found!");
+    }else Display_printf(display, 0, 0, "RTC found!");
 
 
     I2C_close(i2c);
